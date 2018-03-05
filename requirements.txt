@@ -1,0 +1,4 @@
+Flask==0.12.2
+line-bot-sdk==1.5.0
+dropbox==8.5.1
+pylint==1.8.1
