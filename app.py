@@ -3,7 +3,12 @@ MendoBot
 -Beta
 '''
 
+import errno
 import os
+import sys
+import tempfile
+from urllib.parse import quote
+
 from flask import Flask, request, abort
 
 from linebot import (
@@ -20,40 +25,26 @@ from linebot.models import (
 from main._handler import command_handler
 
 app = Flask(__name__)
-# Get channel_secret and channel_access_token from environment variable
-channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
-channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
-if channel_secret is None:
-    print('Specify LINE_CHANNEL_SECRET as environment variable.')
-    sys.exit(1)
-if channel_access_token is None:
-    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
-    sys.exit(1)
 
-MendoBot = LineBotApi(channel_access_token)
-handler = WebhookHandler(channel_secret)
-
-static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-
-my_id = os.getenv('MY_USER_ID', None)
-me = MendoBot.get_profile(my_id)
+MendoBot = LineBotApi('CQcg1+DqDmLr8bouXAsuoSm5vuwB2DzDXpWc/KGUlxzhq9MSWbk9gRFbanmFTbv9wwW8psPOrrg+mHtOkp1l+CTlqVeoUWwWfo54lNh16CcqH7wmQQHT+KnkNataGXez6nNY8YlahgO7piAAKqfjLgdB04t89/1O/w1cDnyilFU=')
+handler = WebhookHandler('c116ac1004040f97a62aa9c3503d52d9')
 
 @app.route("/callback", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
-    signature = request.headers['X-Line-Signature']
+	# get X-Line-Signature header value
+	signature = request.headers['X-Line-Signature']
 
-    # get request body as text
-    body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+	# get request body as text
+	body = request.get_data(as_text=True)
+	app.logger.info("Request body: " + body)
 
-    # handle webhook body
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
+	# handle webhook body
+	try:
+		handler.handle(body, signature)
+	except InvalidSignatureError:
+		abort(400)
 
-    return 'OK'
+	return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -124,10 +115,10 @@ def handle_message(event):
 			
 	def getprofile():
 		'''
-        Send display name and status message of a user.
-        '''
+		Send display name and status message of a user.
+		'''
 		result = ("Display name: " + subject.display_name + "\n"
-                  "Profile picture: " + subject.picture_url)
+				  "Profile picture: " + subject.picture_url)
 		try:
 			profile = MendoBot.get_profile(event.source.user_id)
 			if profile.status_message:
@@ -163,8 +154,6 @@ def handle_leave():
 	app.logger.info("Got leave event")
 	
 if __name__ == "__main__":
-    # Create temporary directory for download content
-    make_static_tmp_dir()
-
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+	
+	port = int(os.getenv('PORT', 5000))
+	app.run(host='0.0.0.0', port=port)
